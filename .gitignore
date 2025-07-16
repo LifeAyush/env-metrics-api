@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+.venv/
+ENV/
+env/
+pip-selfcheck.json
+
+# SQLite database
+*.db
+*.sqlite3
+
+# Environment variables
+.env
+
+# Pytest cache
+.pytest_cache/
+
+# VSCode settings
+.vscode/
+
+# MacOS system files
+.DS_Store
+
+# Mypy & coverage
+.mypy_cache/
+.coverage
+coverage.xml
+
+# Logs
+*.log
+
+# Pydantic compiled cache
+*.pydantic/
+
+# Uvicorn reload artifacts
+*.pid
