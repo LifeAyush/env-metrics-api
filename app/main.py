@@ -1,8 +1,10 @@
 import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
+from app.config import settings
 from app.database import init_db
 from app.auth.routes import router as auth_router
 from app.metrics.routes import router as metrics_router
@@ -14,7 +16,6 @@ logger = setup_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup and shutdown events."""
-    # Run on startup
     try:
         if os.getenv("ENV") != "production":
             logger.info("Initializing database tables (if not exist)...")
@@ -26,7 +27,6 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize application: {e}")
         raise
     yield
-    # Run on shutdown
     logger.info("Application shutdown complete")
 
 app = FastAPI(
@@ -34,6 +34,17 @@ app = FastAPI(
     description="A FastAPI application for managing environmental metrics",
     version="1.0.0",
     lifespan=lifespan
+)
+
+# CORS middleware configuration
+logger.info(f"Configuring CORS for origins: {settings.ALLOWED_ORIGINS}")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
 )
 
 # Global exception handler for custom exceptions
