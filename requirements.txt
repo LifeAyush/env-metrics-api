@@ -16,3 +16,7 @@ email-validator>=2.0.0
 
 # Environment management
 python-dotenv>=1.0.0
+
+# Queueing
+celery[redis]
+redis
