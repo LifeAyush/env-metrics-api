@@ -1,24 +1,40 @@
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.metrics import service
 from app.database import get_db
-from app.schemas import MetricCreate, MetricOut
+from app.schemas import MetricBase, MetricResponse, User
 from app.auth.dependencies import get_current_user
 
 router = APIRouter()
 
-@router.get("/", response_model=List[MetricOut])
-def get_metrics(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    return service.get_all_metrics(db)
+@router.get("/", response_model=List[MetricResponse])
+def get_metrics(
+    category: Optional[str] = Query(None, regex="^(Energy|Water|Waste)$"),
+    sort_by: Optional[str] = Query(None, regex="^(value|date)$"),
+    order: Optional[str] = Query("asc", regex="^(asc|desc)$"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return service.get_metrics_with_filters(db, category, sort_by, order, page, limit)
 
-@router.post("/", response_model=MetricOut)
-def create_metric(metric: MetricCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+@router.get("/metrics/{metric_id}/related", response_model=List[MetricResponse])
+def related_metrics(
+    metric_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    return service.get_related_metrics(db, metric_id)
+
+@router.post("/", response_model=MetricResponse)
+def create_metric(metric: MetricBase, db: Session = Depends(get_db), user=Depends(get_current_user)):
     return service.create_metric(metric, db)
 
-@router.put("/{metric_id}", response_model=MetricOut)
-def update_metric(metric_id: str, updated_metric: MetricCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+@router.put("/{metric_id}", response_model=MetricResponse)
+def update_metric(metric_id: str, updated_metric: MetricBase, db: Session = Depends(get_db), user=Depends(get_current_user)):
     metric = service.update_metric(metric_id, updated_metric, db)
     if not metric:
         raise HTTPException(status_code=404, detail="Metric not found")

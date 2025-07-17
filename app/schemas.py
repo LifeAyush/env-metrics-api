@@ -7,14 +7,14 @@ class CategoryEnum(str, Enum):
     Water = "Water"
     Waste = "Waste"
 
-class MetricCreate(BaseModel):
+class MetricBase(BaseModel):
     name: str
     category: CategoryEnum
     value: float
     unit: str
     date: datetime
 
-class MetricOut(MetricCreate):
+class MetricResponse(MetricBase):
     id: str
 
 class SignupRequest(BaseModel):
